@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Books · Book Friend{% endblock %}
+{% block content %}
+
+    <!-- Search -->
+    <form id="search-form" action="{{ url_for('books') }}" method="get" class="mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <input
+                    name="q"
+                    value="{{ q }}"
+                    placeholder="Search title or author"
+                    class="w-full rounded-lg border border-slate-700 bg-slate-800 text-slate-100 placeholder-slate-400 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+            <input
+                    name="min_rating"
+                    value="{{ min_rating }}"
+                    placeholder="Min rating (0-5)"
+                    class="w-full rounded-lg border border-slate-700 bg-slate-800 text-slate-100 placeholder-slate-400 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+            <button
+                    class="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-500"
+                    type="submit"
+            >
+                Search
+            </button>
+        </div>
+    </form>
+
+    {% if books and books|length > 0 %}
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {% for b in books %}
+                <a
+                        href="{{ url_for('book_detail', book_id=b.get('id') or b.get('book_id') or b.get('uuid') ) }}"
+                        class="block rounded-xl bg-slate-900 border border-slate-800 p-4 shadow hover:bg-slate-800/60 transition"
+                >
+                    <div class="flex items-start gap-4">
+                        <img
+                                src="{{ b.get('image_url') or b.get('cover_url') or 'https://placehold.co/80x110?text=Cover' }}"
+                                alt="cover"
+                                class="h-28 w-20 object-cover rounded-md border border-slate-700"
+                        />
+                        <div class="flex-1">
+                            <h3 class="font-semibold leading-tight text-slate-100">
+                                {{ b.get('title','Untitled') }}
+                            </h3>
+                            <p class="text-sm text-slate-400 mt-0.5">
+                                {{ b.get('author','Unknown') }}
+                            </p>
+                            <p class="text-sm text-slate-400">
+                                {# --- year formatting (supports BCE) --- #}
+                                {% set y = b.get('year') %}
+                                {% if y is not none %}
+                                    {% if y < 0 %}
+                                        {% set pretty_year = (y * -1) ~ ' BCE' %}
+                                    {% else %}
+                                        {% set pretty_year = y %}
+                                    {% endif %}
+                                {% else %}
+                                    {% set pretty_year = '—' %}
+                                {% endif %}
+                                {{ pretty_year }}
+                            </p>
+                            <div class="mt-2 text-sm text-slate-300">
+                                <span class="font-medium">Rating:</span> {{ b.get('rating') }}
+                                {% if b.get('featured_rating') is not none %}
+                                    · <span class="font-medium">Featured:</span> {{ b.get('featured_rating') }}
+                                {% endif %}
+                                {% if b.get('sentiment_score') is not none %}
+                                    · <span class="font-medium">Sentiment:</span> {{ b.get('sentiment_score') }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="rounded-xl bg-slate-900 border border-slate-800 p-6 shadow">
+            <p class="text-slate-300">No books found.</p>
+        </div>
+    {% endif %}
+
+{% endblock %}
